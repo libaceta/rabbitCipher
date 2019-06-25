@@ -1,6 +1,5 @@
 package application;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,15 +11,18 @@ public class CipherController {
 	public void cipher(ActionEvent event) {
 		byte[] key = os2ip((byte)0x91, (byte)0x28, (byte)0x13, (byte)0x29, (byte)0x2E, (byte)0x3D, (byte)0x36, (byte)0xFE, (byte)0x3B, (byte)0xFC, (byte)0x62, (byte)0xF1, (byte)0xDC, (byte)0x51, (byte)0xC3, (byte)0xAC);
 		byte[] msg = "Hello World!".getBytes();
+		byte[] original = msg.clone();
 		
-		System.out.println("Mensaje original(bytes):	" + toBinaryString(msg));
+		System.out.println("Mensaje original(bytes):	" + toBinaryString(original));
 	    RabbitCipher cipher = new RabbitCipher();
 	    cipher.setupKey(key);
 	    byte[] cipherMessage = cipher.crypt(msg);
 	    
 	    System.out.println("Mensaje encriptado(bytes):	" + toBinaryString(cipherMessage));
 	    
-	    byte[] decipherMessage = cipher.crypt(os2ip(cipherMessage));
+	    cipher.reset();
+	    cipher.setupKey(key);
+	    byte[] decipherMessage = cipher.crypt(cipherMessage);
 	    
 	    System.out.println("Mensaje desencriptado(bytes):	" + toBinaryString(decipherMessage));
 	}
