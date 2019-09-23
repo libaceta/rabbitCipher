@@ -41,12 +41,12 @@ public final class RabbitCipher {
      * Original byte array used to return encrypted bytes
      * @param message (encrypted) message to be (de-)encrypted
      */
-    public byte[] crypt(byte[] message) {
+    public byte[] crypt(byte[] message, int headerSpace) {
         if(!ready) {
             throw new IllegalStateException("Key is not setup. You need to call setupKey() prior encrypting data.");
         }
 
-        for(int i=0; i<message.length; i++) {
+        for(int i=headerSpace; i<message.length; i++) {
             if(i % BLOCK_LENGTH == 0) {
                 nextBlock();
             }

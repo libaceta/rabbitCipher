@@ -17,6 +17,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -28,9 +29,13 @@ public class CipherController {
 
 	private byte[] inputFile;
 	private String inputPath;
+	private int headerSpace;
 	
 	@FXML
 	private TextField txtInputPath;
+	
+	@FXML
+	private Label lbInfo;
 	
 	private Desktop desktop = Desktop.getDesktop();
 
@@ -50,12 +55,19 @@ public class CipherController {
 		inputPath = file.getPath();
 		txtInputPath.setText(file.getPath());
 		
-		System.out.println(file.getPath());
+		lbInfo.setText("Archivo cargado");
 		
 		try {
 			inputFile = Files.readAllBytes(file.toPath());
 			System.out.println("Input File: " + file.getPath());
-			System.out.println(toBinaryString(inputFile));
+			String extension = file.getPath().substring(file.getPath().lastIndexOf("."));
+			switch(extension) {
+				case ".txt": headerSpace = 0; break;
+				case ".bmp": headerSpace = 54; break;
+				default: headerSpace = 0;
+			}
+			
+			//System.out.println(toBinaryString(inputFile));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -72,19 +84,20 @@ public class CipherController {
 
 	public void cipher(ActionEvent event) {
 		//cryptDecryptTest();
+		lbInfo.setText("");
 		
 		if(inputFile == null) {
 			return; //msj error
 		}
 		
 		byte[] key = os2ip((byte)0x91, (byte)0x28, (byte)0x13, (byte)0x29, (byte)0x2E, (byte)0x3D, (byte)0x36, (byte)0xFE, (byte)0x3B, (byte)0xFC, (byte)0x62, (byte)0xF1, (byte)0xDC, (byte)0x51, (byte)0xC3, (byte)0xAC);
-		System.out.println("Key (bytes - bits):");
-		System.out.println(toBinaryString(key));
+		//System.out.println("Key (bytes - bits):");
+		//System.out.println(toBinaryString(key));
 		
 		RabbitCipher cipher = new RabbitCipher();
 		cipher.setupKey(key);
-		byte[] cipherMessage = cipher.crypt(inputFile);
-		System.out.println("Mensaje encriptado(bytes):	" + toBinaryString(cipherMessage));
+		byte[] cipherMessage = cipher.crypt(inputFile, headerSpace);
+		//System.out.println("Mensaje encriptado(bytes):	" + toBinaryString(cipherMessage));
 		
 		
 		try {
@@ -93,10 +106,13 @@ public class CipherController {
 			os = new FileOutputStream(file);
 			os.write(inputFile);
 	        os.close();
+	        lbInfo.setText("Archivo encriptado");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			lbInfo.setText("Error generando nuevo archivo");
 		} catch (IOException e) {
 			e.printStackTrace();
+			lbInfo.setText("Error generando nuevo archivo");
 		}
         
 		
@@ -117,6 +133,8 @@ public class CipherController {
 		return result;
 	}
 
+	
+	
 	public String toBinaryString(byte[] bytes) {
 		StringBuilder sb = new StringBuilder();
 		StringBuilder byteString = new StringBuilder();
@@ -137,13 +155,13 @@ public class CipherController {
 		System.out.println("Mensaje original(bytes):	" + toBinaryString(original));
 		RabbitCipher cipher = new RabbitCipher();
 		cipher.setupKey(key);
-		byte[] cipherMessage = cipher.crypt(msg);
+		byte[] cipherMessage = cipher.crypt(msg, 0);
 
 		System.out.println("Mensaje encriptado(bytes):	" + toBinaryString(cipherMessage));
 
 		cipher.reset();
 		cipher.setupKey(key);
-		byte[] decipherMessage = cipher.crypt(cipherMessage);
+		byte[] decipherMessage = cipher.crypt(cipherMessage, 0);
 
 		System.out.println("Mensaje desencriptado(bytes):	" + toBinaryString(decipherMessage));
 	}
